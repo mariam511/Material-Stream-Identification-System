@@ -51,14 +51,9 @@ for cls in classes:
         if os.path.isfile(os.path.join(augmentedDir, cls, file)):
             augmented_count += 1
 
-    required_count = int(count * 1.3)
+    
 
-    if augmented_count >= required_count:
-        status = "oK"
-    else:
-        status = "needs more augmentation"
-
-    print(f"{cls}: original={count}, augmented={augmented_count}, required={required_count} → {status}")
+    print(f"{cls}: original={count}, augmented={augmented_count} ")
 
 
 
