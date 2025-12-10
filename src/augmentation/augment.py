@@ -55,5 +55,78 @@ for cls in classes:
 
     print(f"{cls}: original={count}, augmented={augmented_count} ")
 
+#Balancing classes
+print("Balancing classes to match the largest class")
 
+class_counts = {}
+max_count = 0
+for cls in classes:
+    folder = os.path.join(augmentedDir, cls)
+    images = []
+    for f in os.listdir(folder):
+        file_path = os.path.join(folder, f)
+        if os.path.isfile(file_path):
+            images.append(f)
+    count = len(images)
+    class_counts[cls] = count
+    print(cls, "has", count, "images")
+    if count > max_count:
+        max_count = count
+
+for cls in classes:
+    folder = os.path.join(augmentedDir, cls)
+    images = []
+    for f in os.listdir(folder):
+        file_path = os.path.join(folder, f)
+        if os.path.isfile(file_path):
+            images.append(f)
+
+    curr_count = len(images)
+    print(cls, "current count:", curr_count)
+
+    if curr_count >= max_count:
+        print(cls, " is the largest class.\n")
+        continue
+
+    needed = max_count - curr_count
+    print("Need to add", needed, "more images for", cls)
+
+    extra_index = 0
+
+    while curr_count < max_count and extra_index < len(images):
+        src_file = images[extra_index]
+        src_path = os.path.join(folder, src_file)
+        img = cv2.imread(src_path)
+        if img is not None:
+            flipped_img = cv2.flip(img, 1)
+            name = "extra_flip_" + str(extra_index) + ".jpg"
+            cv2.imwrite(os.path.join(folder, name), flipped_img)
+            curr_count += 1
+        extra_index += 1
+
+    extra_index = 0
+    while curr_count < max_count and extra_index < len(images):
+        src_file = images[extra_index]
+        src_path = os.path.join(folder, src_file)
+        img = cv2.imread(src_path)
+        if img is not None:
+            rotated_img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
+            name = "extra_rot_" + str(extra_index) + ".jpg"
+            cv2.imwrite(os.path.join(folder, name), rotated_img)
+            curr_count += 1
+        extra_index += 1
+
+    extra_index = 0
+    while curr_count < max_count and extra_index < len(images):
+        src_file = images[extra_index]
+        src_path = os.path.join(folder, src_file)
+        img = cv2.imread(src_path)
+        if img is not None:
+            bright_img = cv2.convertScaleAbs(img, alpha=1.0, beta=30)
+            name = "extra_bright_" + str(extra_index) + ".jpg"
+            cv2.imwrite(os.path.join(folder, name), bright_img)
+            curr_count += 1
+        extra_index += 1
+
+    print("Final count for", cls, ":", curr_count, "\n")
 
