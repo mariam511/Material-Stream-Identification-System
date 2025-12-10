@@ -36,25 +36,8 @@ for cls in classes:
             cv2.imwrite(distFilePath,img_resized)
         else:
             print("can not read:",srcFilePath)
-            
-# convert files to Numpy arrays
-x = []  
-y = []  
-i=0
-for  cls in (classes):
-    folderPath = os.path.join(processedDir, cls)
-    for file in os.listdir(folderPath):
-        filePath = os.path.join(folderPath, file)
-        img = cv2.imread(filePath) 
-        if img is not None:
-            x.append(img)     
-            y.append(i)      
-        else:
-            print("Cannot read:", filePath)
-x=np.array(x)
-y=np.array(y)
-print("Data shape:", x.shape)
-print("Labels shape:", y.shape)    
+
+
 
 
 

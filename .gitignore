@@ -1,5 +1,6 @@
 data/cleaned/
 data/processed/
+data/augmented
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
