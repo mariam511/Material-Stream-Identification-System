@@ -2,7 +2,7 @@ import os
 import cv2
 import pandas as pd
 
-rawDir="data/raw"
+rawDir='data/raw'
 
 #read raw Data
 classes=[]

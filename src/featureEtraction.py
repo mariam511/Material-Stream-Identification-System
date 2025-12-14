@@ -5,7 +5,7 @@ import numpy as np
 from skimage.feature import hog, local_binary_pattern
 from sklearn.preprocessing import LabelEncoder
 
-augmentedDir = "data\augmented"  
+augmentedDir = "data\\augmented"  
 classes = [d for d in os.listdir(augmentedDir) if os.path.isdir(os.path.join(augmentedDir,d))]
 print("Classes found:", classes)
 
@@ -85,3 +85,4 @@ print("X shape:", X.shape)
 print("y shape:", y.shape)
 print("y_encoded shape:", y_encoded.shape)
 print("Class mapping:", dict(zip(le.classes_, le.transform(le.classes_))))
+
