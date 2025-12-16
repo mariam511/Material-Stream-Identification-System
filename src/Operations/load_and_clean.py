@@ -2,7 +2,7 @@ import os
 import cv2
 import pandas as pd
 
-rawDir = "D:/SHaHD/4th_first term/Machine Learning/Assignments/ML_Project/Material-Stream-Identification-System/src/SVM_KNN/data/raw"
+rawDir = "data/raw"
 
 # Read raw data
 classes = []
