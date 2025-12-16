@@ -1,33 +1,51 @@
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import LabelEncoder
 import numpy as np
+import pickle
+import os
+from sklearn.preprocessing import StandardScaler
 
+ARTIFACTS_DIR = "artifacts"
 
-print("Original X shape:", X.shape)
-print("Original y shape:", y.shape)
+X_TRAIN_PATH = f"{ARTIFACTS_DIR}/X_train.npy"
+Y_TRAIN_PATH = f"{ARTIFACTS_DIR}/y_train.npy"
+X_TEST_PATH  = f"{ARTIFACTS_DIR}/X_test.npy"
+Y_TEST_PATH  = f"{ARTIFACTS_DIR}/y_test.npy"
+SCALER_PATH  = f"{ARTIFACTS_DIR}/scaler.pkl"
+X_TRAIN_SCALED_PATH = f"{ARTIFACTS_DIR}/X_train_scaled.npy"
+X_TEST_SCALED_PATH  = f"{ARTIFACTS_DIR}/X_test_scaled.npy"
 
+# ================== LOAD FEATURES ==================
+X_train = np.load(X_TRAIN_PATH)
+y_train = np.load(Y_TRAIN_PATH)
+X_test  = np.load(X_TEST_PATH)
+y_test  = np.load(Y_TEST_PATH)
 
-le = LabelEncoder()
-y_encoded = le.fit_transform(y)
-class_mapping = dict(zip(le.classes_, le.transform(le.classes_)))
-print("Class mapping:", class_mapping)
-print("y_encoded shape:", y_encoded.shape)
+print("Loaded cached features:")
+print("X_train:", X_train.shape)
+print("y_train:", y_train.shape)
+print("X_test :", X_test.shape)
+print("y_test :", y_test.shape)
 
-# split data 
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y_encoded, test_size=0.2, random_state=42, stratify=y_encoded
-)
+# ================== LOAD OR FIT SCALER ==================
+if os.path.exists(SCALER_PATH) and os.path.exists(X_TRAIN_SCALED_PATH) and os.path.exists(X_TEST_SCALED_PATH):
+    print("Cached scaled features found. Loading...")
+    X_train_scaled = np.load(X_TRAIN_SCALED_PATH)
+    X_test_scaled  = np.load(X_TEST_SCALED_PATH)
+    with open(SCALER_PATH, "rb") as f:
+        scaler = pickle.load(f)
+else:
+    print("No cached scaled features. Scaling now...")
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_test_scaled  = scaler.transform(X_test)
 
-print("Before scaling:")
-print("X_train shape:", X_train.shape)
-print("X_test shape:", X_test.shape)
+    # Save scaler and scaled features
+    with open(SCALER_PATH, "wb") as f:
+        pickle.dump(scaler, f)
+    np.save(X_TRAIN_SCALED_PATH, X_train_scaled)
+    np.save(X_TEST_SCALED_PATH, X_test_scaled)
+    print("Scaled features cached successfully!")
 
-# Standardization (Mean=0, Std=1)
-scaler = StandardScaler()
-X_train = scaler.fit_transform(X_train)
-X_test = scaler.transform(X_test)
-
-print("After scaling:")
-print("X_train shape:", X_train.shape)
-print("X_test shape:", X_test.shape)
+# ================== FINAL CHECK ==================
+print("\nFinal data ready for ML:")
+print("X_train_scaled:", X_train_scaled.shape)
+print("X_test_scaled :", X_test_scaled.shape)

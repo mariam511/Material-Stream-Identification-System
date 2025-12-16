@@ -3,40 +3,37 @@ import cv2
 import numpy as np
 import random
 
-processedDir = "data/processed"
-augmentedDir = "data/augmented"
-os.makedirs(augmentedDir,exist_ok=True)
+processedDir = "data/train"  # augment training data only
+augmentedDir = "data/augmented/train"
+os.makedirs(augmentedDir, exist_ok=True)
 
-classes=[]
+classes = []
 for item in os.listdir(processedDir):
-    path=os.path.join(processedDir,item)
-    if(os.path.isdir(path)):
+    path = os.path.join(processedDir, item)
+    if os.path.isdir(path):
         classes.append(item)
+
 for cls in classes:
     srcFolder = os.path.join(processedDir, cls)
     distFolder = os.path.join(augmentedDir, cls)
     os.makedirs(distFolder, exist_ok=True)
     for file in os.listdir(srcFolder):
-        filePath=os.path.join(srcFolder,file)
-        img=cv2.imread(filePath)
-        if (img is not None):
-            # save original 
+        filePath = os.path.join(srcFolder, file)
+        img = cv2.imread(filePath)
+        if img is not None:
             cv2.imwrite(os.path.join(distFolder, file), img)
             # flip horizontally
-            flip_img=cv2.flip(img,1)
-            cv2.imwrite(os.path.join(distFolder,"flip_"+file),flip_img)
-            #rotate 90 clockwise
-            rot_img=cv2.rotate(img,cv2.ROTATE_90_CLOCKWISE)
-            cv2.imwrite(os.path.join(distFolder,"rot90_"+file),rot_img)
-            #random brightness
-            #new_pixel=alpha×pixel+beta alpha->contrast beta->brightness
-            bright_img=cv2.convertScaleAbs(img, alpha=1.0, beta=random.randint(-50,50))
-            cv2.imwrite(os.path.join(distFolder, "bright_"+file), bright_img)
+            flip_img = cv2.flip(img, 1)
+            cv2.imwrite(os.path.join(distFolder, "flip_" + file), flip_img)
+            # rotate 90 clockwise
+            rot_img = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
+            cv2.imwrite(os.path.join(distFolder, "rot90_" + file), rot_img)
+            # random brightness
+            bright_img = cv2.convertScaleAbs(img, alpha=1.0, beta=random.randint(-50, 50))
+            cv2.imwrite(os.path.join(distFolder, "bright_" + file), bright_img)
         else:
             print("cannot read:", filePath)
 
-
-#checking number of images before and after augmentation for each class:")
 
 print("checking number of images before and after augmentation for each class:")
 
@@ -45,17 +42,15 @@ for cls in classes:
     for file in os.listdir(os.path.join(processedDir, cls)):
         if os.path.isfile(os.path.join(processedDir, cls, file)):
             count += 1
-    
+
     augmented_count = 0
     for file in os.listdir(os.path.join(augmentedDir, cls)):
         if os.path.isfile(os.path.join(augmentedDir, cls, file)):
             augmented_count += 1
 
-    
-
     print(f"{cls}: original={count}, augmented={augmented_count} ")
 
-#Balancing classes
+# Balancing classes
 print("Balancing classes to match the largest class")
 
 class_counts = {}
@@ -91,8 +86,8 @@ for cls in classes:
     needed = max_count - curr_count
     print("Need to add", needed, "more images for", cls)
 
+    # Extra flips
     extra_index = 0
-
     while curr_count < max_count and extra_index < len(images):
         src_file = images[extra_index]
         src_path = os.path.join(folder, src_file)
@@ -104,6 +99,7 @@ for cls in classes:
             curr_count += 1
         extra_index += 1
 
+    # Extra rotations
     extra_index = 0
     while curr_count < max_count and extra_index < len(images):
         src_file = images[extra_index]
@@ -116,6 +112,7 @@ for cls in classes:
             curr_count += 1
         extra_index += 1
 
+    # Extra brightness
     extra_index = 0
     while curr_count < max_count and extra_index < len(images):
         src_file = images[extra_index]
@@ -129,4 +126,3 @@ for cls in classes:
         extra_index += 1
 
     print("Final count for", cls, ":", curr_count, "\n")
-
