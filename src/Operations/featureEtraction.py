@@ -14,9 +14,9 @@ X_TEST_PATH  = f"{ARTIFACTS_DIR}/X_test.npy"
 Y_TEST_PATH  = f"{ARTIFACTS_DIR}/y_test.npy"
 ENCODER_PATH = f"{ARTIFACTS_DIR}/label_encoder.pkl"
 
-IMG_SIZE = (128, 128)
+IMG_SIZE = (64, 64)
 
-LBP_RADIUS = 1
+LBP_RADIUS = 3
 LBP_N_POINTS = 8 * LBP_RADIUS
 LBP_METHOD = 'uniform'
 
@@ -24,7 +24,7 @@ HOG_PIXELS_PER_CELL = (8, 8)
 HOG_CELLS_PER_BLOCK = (2, 2)
 HOG_ORIENTATIONS = 9
 
-COLOR_BINS = 16
+COLOR_BINS = 8
 
 # ==================== FEATURE EXTRACTION FUNCTIONS FOR CAMERA ====================
 # Camera feature extraction
@@ -48,7 +48,7 @@ def extract_features_from_dir(base_dir):
             if img is None:
                 continue
 
-            img = cv2.resize(img, IMG_SIZE)
+            img = cv2.resize(img, IMG_SIZE,interpolation= cv2.INTER_AREA)
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
             hog_feat = hog(
@@ -70,12 +70,15 @@ def extract_features_from_dir(base_dir):
             lbp_hist = lbp_hist.astype("float")
             lbp_hist /= (lbp_hist.sum() + 1e-6)
 
-            hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-            h = cv2.calcHist([hsv], [0], None, [COLOR_BINS], [0, 180])
-            s = cv2.calcHist([hsv], [1], None, [COLOR_BINS], [0, 256])
-            v = cv2.calcHist([hsv], [2], None, [COLOR_BINS], [0, 256])
-            color_hist = np.concatenate([h, s, v]).ravel()
-            color_hist /= (color_hist.sum() + 1e-6)
+            hsv = cv2.cvtColor(img, cv2.COLOR_BGR2Lab)
+            # h = cv2.calcHist([hsv], [0], None, [COLOR_BINS], [0, 256])
+            # s = cv2.calcHist([hsv], [1], None, [COLOR_BINS], [0, 256])
+            # v = cv2.calcHist([hsv], [2], None, [COLOR_BINS], [0, 256])
+            # color_hist = np.concatenate([h, s, v]).ravel()
+            # color_hist /= (color_hist.sum() + 1e-6)
+            hist_3d = cv2.calcHist([hsv], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256])
+            cv2.normalize(hist_3d, hist_3d)
+            color_hist = hist_3d.flatten()
 
             feature_vector = np.concatenate([hog_feat, lbp_hist, color_hist])
 
@@ -136,7 +139,7 @@ def extract_features_from_image(img):
     #Returns a 1D feature vector (HOG + LBP + Color Histogram).
     #"""
     # reuse all training parameters
-    img = cv2.resize(img, IMG_SIZE)
+    img = cv2.resize(img, IMG_SIZE,interpolation=cv2.INTER_AREA)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     
     # HOG
@@ -154,12 +157,20 @@ def extract_features_from_image(img):
     lbp_hist /= (lbp_hist.sum() + 1e-6)
     
     # Color histogram
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    h = cv2.calcHist([hsv], [0], None, [COLOR_BINS], [0, 180])
-    s = cv2.calcHist([hsv], [1], None, [COLOR_BINS], [0, 256])
-    v = cv2.calcHist([hsv], [2], None, [COLOR_BINS], [0, 256])
-    color_hist = np.concatenate([h, s, v]).ravel()
-    color_hist /= (color_hist.sum() + 1e-6)
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2Lab)
+    # h = cv2.calcHist([hsv], [0], None, [COLOR_BINS], [0, 256])
+    # s = cv2.calcHist([hsv], [1], None, [COLOR_BINS], [0, 256])
+    # v = cv2.calcHist([hsv], [2], None, [COLOR_BINS], [0, 256])
+    # color_hist = np.concatenate([h, s, v]).ravel()
+    # color_hist /= (color_hist.sum() + 1e-6)
+
+    hist_3d = cv2.calcHist([hsv], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256])
+
+    # 2. Normalize the result (Standardization)
+    cv2.normalize(hist_3d, hist_3d)
+
+    # 3. Flatten the 3D cube into a 1D array
+    color_hist = hist_3d.flatten()
 
     feature_vector = np.concatenate([hog_feat, lbp_hist, color_hist])
     return feature_vector

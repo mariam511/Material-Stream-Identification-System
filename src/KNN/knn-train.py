@@ -38,7 +38,7 @@ best_knn.fit(X_train_scaled, y_train)
 CONF_THRESH = 0.44
 
 y_pred_prob = best_knn.predict_proba(X_test_scaled)
-
+ 
 y_pred = [np.argmax(p) if np.max(p) >= CONF_THRESH else len(le.classes_) for p in y_pred_prob]
 
 accuracy = accuracy_score(y_test, y_pred)

@@ -17,7 +17,7 @@ for cls in os.listdir(cleanedDir):
         classFolderPath = os.path.join(cleanedDir, cls)
         os.makedirs(classFolderPath, exist_ok=True)
 
-IMG_SIZE = (128, 128)
+IMG_SIZE = (64, 64)
 
 # Resizing images
 for cls in classes:
@@ -31,7 +31,7 @@ for cls in classes:
 
         img = cv2.imread(srcFilePath)
         if img is not None:
-            img_resized = cv2.resize(img, IMG_SIZE)
+            img_resized = cv2.resize(img, IMG_SIZE,interpolation=cv2.INTER_AREA)
             cv2.imwrite(distFilePath, img_resized)
         else:
             print("cannot read:", srcFilePath)

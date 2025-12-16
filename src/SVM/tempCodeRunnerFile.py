@@ -24,10 +24,10 @@ y_test  = np.load(Y_TEST_PATH)
 # Load label encoder
 with open(LE_PATH, "rb") as f:
     le = pickle.load(f)
-print("Data loaded.")  
+print("Data loaded.")
 # Train SVM
 print("Fitting SVM model...")
-svm_model = SVC(C=100,gamma='scale' ,  kernel='rbf', probability=True ,class_weight='balanced')
+svm_model = SVC(C=100,gamma='scale'   kernel='rbf', probability=True ,class_weight='balanced')
 svm_model.fit(X_train_scaled, y_train)
 
 # Evaluate with unknown class handling

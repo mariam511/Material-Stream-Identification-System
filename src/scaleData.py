@@ -2,6 +2,7 @@ import numpy as np
 import pickle
 import os
 from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
 
 ARTIFACTS_DIR = "artifacts"
 
@@ -12,6 +13,7 @@ Y_TEST_PATH  = f"{ARTIFACTS_DIR}/y_test.npy"
 SCALER_PATH  = f"{ARTIFACTS_DIR}/scaler.pkl"
 X_TRAIN_SCALED_PATH = f"{ARTIFACTS_DIR}/X_train_scaled.npy"
 X_TEST_SCALED_PATH  = f"{ARTIFACTS_DIR}/X_test_scaled.npy"
+
 
 # ================== LOAD FEATURES ==================
 X_train = np.load(X_TRAIN_PATH)
@@ -44,6 +46,7 @@ else:
     np.save(X_TRAIN_SCALED_PATH, X_train_scaled)
     np.save(X_TEST_SCALED_PATH, X_test_scaled)
     print("Scaled features cached successfully!")
+
 
 # ================== FINAL CHECK ==================
 print("\nFinal data ready for ML:")
