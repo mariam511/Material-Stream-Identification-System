@@ -1,8 +1,8 @@
 import os
 import cv2
 import numpy as np
-from skimage.feature import hog, local_binary_pattern
 from sklearn.preprocessing import LabelEncoder
+from tensorflow.keras.applications.vgg16 import VGG16, preprocess_input
 import pickle
 
 ARTIFACTS_DIR = "artifacts"
@@ -14,27 +14,25 @@ X_TEST_PATH  = f"{ARTIFACTS_DIR}/X_test.npy"
 Y_TEST_PATH  = f"{ARTIFACTS_DIR}/y_test.npy"
 ENCODER_PATH = f"{ARTIFACTS_DIR}/label_encoder.pkl"
 
-IMG_SIZE = (64, 64)
+# VGG16 requires exactly 224x224
+IMG_SIZE = (224, 224)
 
-LBP_RADIUS = 3
-LBP_N_POINTS = 8 * LBP_RADIUS
-LBP_METHOD = 'uniform'
+# ==================== LOAD CNN MODEL ====================
+print("Loading VGG16 Model...")
+# include_top=False: Removes the final "classification" layer (Cat vs Dog)
+# pooling='avg': Averages the features into a 1D vector of size 512
+model = VGG16(weights='imagenet', include_top=False, input_shape=(224, 224, 3), pooling='avg')
+print("VGG16 Model Loaded successfully!")
 
-HOG_PIXELS_PER_CELL = (8, 8)
-HOG_CELLS_PER_BLOCK = (2, 2)
-HOG_ORIENTATIONS = 9
 
-COLOR_BINS = 8
-
-# ==================== FEATURE EXTRACTION FUNCTIONS FOR CAMERA ====================
-# Camera feature extraction
+# ==================== FEATURE EXTRACTION FUNCTIONS ====================
 
 def extract_features_from_dir(base_dir):
     X, y = [], []
     classes = sorted([d for d in os.listdir(base_dir)
                       if os.path.isdir(os.path.join(base_dir, d))])
 
-    print(f"Extracting from {base_dir}")
+    print(f"Extracting Deep Features from {base_dir}")
     print("Classes:", classes)
 
     for cls in classes:
@@ -48,41 +46,21 @@ def extract_features_from_dir(base_dir):
             if img is None:
                 continue
 
-            img = cv2.resize(img, IMG_SIZE,interpolation= cv2.INTER_AREA)
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            # 1. Resize to 224x224 for VGG16
+            img = cv2.resize(img, IMG_SIZE, interpolation=cv2.INTER_AREA)
 
-            hog_feat = hog(
-                gray,
-                orientations=HOG_ORIENTATIONS,
-                pixels_per_cell=HOG_PIXELS_PER_CELL,
-                cells_per_block=HOG_CELLS_PER_BLOCK,
-                block_norm='L2-Hys',
-                transform_sqrt=True,
-                feature_vector=True
-            )
+            # 2. Preprocess for VGG16
+            # Expand dims: (224, 224, 3) -> (1, 224, 224, 3)
+            x = np.expand_dims(img, axis=0)
+            # VGG specific preprocessing (Mean subtraction, BGR handling)
+            x = preprocess_input(x)
 
-            lbp = local_binary_pattern(gray, LBP_N_POINTS, LBP_RADIUS, LBP_METHOD)
-            lbp_hist, _ = np.histogram(
-                lbp.ravel(),
-                bins=np.arange(0, LBP_N_POINTS + 3),
-                range=(0, LBP_N_POINTS + 2)
-            )
-            lbp_hist = lbp_hist.astype("float")
-            lbp_hist /= (lbp_hist.sum() + 1e-6)
-
-            hsv = cv2.cvtColor(img, cv2.COLOR_BGR2Lab)
-            # h = cv2.calcHist([hsv], [0], None, [COLOR_BINS], [0, 256])
-            # s = cv2.calcHist([hsv], [1], None, [COLOR_BINS], [0, 256])
-            # v = cv2.calcHist([hsv], [2], None, [COLOR_BINS], [0, 256])
-            # color_hist = np.concatenate([h, s, v]).ravel()
-            # color_hist /= (color_hist.sum() + 1e-6)
-            hist_3d = cv2.calcHist([hsv], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256])
-            cv2.normalize(hist_3d, hist_3d)
-            color_hist = hist_3d.flatten()
-
-            feature_vector = np.concatenate([hog_feat, lbp_hist, color_hist])
-
-            X.append(feature_vector)
+            # 3. Extract Features
+            # verbose=0 hides the progress bar for every single image
+            features = model.predict(x, verbose=0)
+            
+            # features shape is (1, 512), we want (512,)
+            X.append(features[0])
             y.append(cls)
 
     return np.array(X), np.array(y)
@@ -105,7 +83,7 @@ if all(os.path.exists(p) for p in
         le = pickle.load(f)
 
 else:
-    print("No cache found. Extracting features...")
+    print("No cache found. Extracting features using CNN...")
 
     # -------- TRAIN --------
     X_train, y_train = extract_features_from_dir("data/augmented/train")
@@ -132,45 +110,23 @@ print("DONE")
 print("Train:", X_train.shape, y_train.shape)
 print("Test :", X_test.shape, y_test.shape)
 print("Classes:", dict(zip(le.classes_, le.transform(le.classes_))))
+
+
 # ==================== CAMERA FEATURE EXTRACTION FUNCTION ====================
 def extract_features_from_image(img):
-    #    """
-    #Extract features from a single image (numpy array).
-    #Returns a 1D feature vector (HOG + LBP + Color Histogram).
-    #"""
-    # reuse all training parameters
-    img = cv2.resize(img, IMG_SIZE,interpolation=cv2.INTER_AREA)
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    """
+    Extract features from a single image using VGG16.
+    Returns a 1D feature vector (Size 512).
+    """
+    # 1. Resize
+    img_resized = cv2.resize(img, IMG_SIZE, interpolation=cv2.INTER_AREA)
     
-    # HOG
-    hog_feat = hog(gray, orientations=HOG_ORIENTATIONS,
-                pixels_per_cell=HOG_PIXELS_PER_CELL,
-                cells_per_block=HOG_CELLS_PER_BLOCK,
-                block_norm='L2-Hys',
-                transform_sqrt=True, feature_vector=True)
-    # LBP
-    lbp = local_binary_pattern(gray, LBP_N_POINTS, LBP_RADIUS, LBP_METHOD)
-    lbp_hist, _ = np.histogram(lbp.ravel(),
-                            bins=np.arange(0, LBP_N_POINTS + 3),
-                            range=(0, LBP_N_POINTS + 2))
-    lbp_hist = lbp_hist.astype("float")
-    lbp_hist /= (lbp_hist.sum() + 1e-6)
+    # 2. Preprocess
+    x = np.expand_dims(img_resized, axis=0)
+    x = preprocess_input(x)
     
-    # Color histogram
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2Lab)
-    # h = cv2.calcHist([hsv], [0], None, [COLOR_BINS], [0, 256])
-    # s = cv2.calcHist([hsv], [1], None, [COLOR_BINS], [0, 256])
-    # v = cv2.calcHist([hsv], [2], None, [COLOR_BINS], [0, 256])
-    # color_hist = np.concatenate([h, s, v]).ravel()
-    # color_hist /= (color_hist.sum() + 1e-6)
-
-    hist_3d = cv2.calcHist([hsv], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256])
-
-    # 2. Normalize the result (Standardization)
-    cv2.normalize(hist_3d, hist_3d)
-
-    # 3. Flatten the 3D cube into a 1D array
-    color_hist = hist_3d.flatten()
-
-    feature_vector = np.concatenate([hog_feat, lbp_hist, color_hist])
-    return feature_vector
+    # 3. Predict
+    features = model.predict(x, verbose=0)
+    
+    # Return flattened 1D array
+    return features[0]

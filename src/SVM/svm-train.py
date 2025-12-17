@@ -28,7 +28,7 @@ print("Data loaded.")
 # Train SVM
 print("Fitting SVM model...")
 svm_model = SVC(C=100,gamma='scale' ,  kernel='rbf', probability=True ,class_weight='balanced')
-svm_model.fit(X_train_scaled, y_train)
+svm_model.fit(X_train_scaled, y_train) 
 
 # Evaluate with unknown class handling
 CONF_THRESH = 0.44

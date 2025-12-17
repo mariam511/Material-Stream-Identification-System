@@ -5,7 +5,7 @@ from sklearn.preprocessing import StandardScaler
 
 ARTIFACTS_DIR = "artifacts"
 
-X_TRAIN_PATH = f"{ARTIFACTS_DIR}/X_train.npy"
+X_TRAIN_PATH = f"{ARTIFACTS_DIR}/X_train.npy" 
 Y_TRAIN_PATH = f"{ARTIFACTS_DIR}/y_train.npy"
 X_TEST_PATH  = f"{ARTIFACTS_DIR}/X_test.npy"
 Y_TEST_PATH  = f"{ARTIFACTS_DIR}/y_test.npy"

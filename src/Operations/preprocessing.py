@@ -17,7 +17,7 @@ for cls in os.listdir(cleanedDir):
         classFolderPath = os.path.join(cleanedDir, cls)
         os.makedirs(classFolderPath, exist_ok=True)
 
-IMG_SIZE = (64, 64)
+IMG_SIZE = (224, 224)
 
 # Resizing images
 for cls in classes:
