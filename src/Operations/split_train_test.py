@@ -26,4 +26,4 @@ for cls in classes:
     for img in test_imgs:
         shutil.copy(os.path.join(cls_path, img), os.path.join(testDir, cls, img))
 
-print("Train/Test split completed!")
+print("Train/Test split Done!")
