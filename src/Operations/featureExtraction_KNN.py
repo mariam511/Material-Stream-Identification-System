@@ -1,3 +1,7 @@
+
+#--------------------------- Feature Extraction for KNN model----------------------#
+
+
 import os
 import cv2
 import numpy as np
@@ -8,7 +12,7 @@ import pickle
 models = "artifacts"
 os.makedirs(models, exist_ok=True)
 
-X_TRAIN_PATH = f"{models}/knn_X_train.npy"
+X_TRAIN_PATH = f"{models}/knn_X_train.npy"  
 Y_TRAIN_PATH = f"{models}/knn_y_train.npy"
 X_TEST_PATH  = f"{models}/knn_X_test.npy"
 Y_TEST_PATH  = f"{models}/knn_y_test.npy"

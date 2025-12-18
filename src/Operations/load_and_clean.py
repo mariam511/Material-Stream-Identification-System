@@ -18,7 +18,6 @@ for cls in classes:
         file_path = os.path.join(folder_path, file)
         if os.path.isfile(file_path):
             cnt += 1
-    print(cls, ":", cnt, "files")
 
 # Filter raw data
 cleanedDir = "data/cleaned"

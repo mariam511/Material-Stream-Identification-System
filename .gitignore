@@ -1,6 +1,9 @@
 data/cleaned/
 data/processed/
 data/augmented
+data/test
+data/train
+artifacts/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

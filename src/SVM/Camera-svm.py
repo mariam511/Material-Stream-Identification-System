@@ -4,10 +4,10 @@ import pickle
 from featureEtraction import extract_features_from_image
 
 
-ARTIFACTS_DIR = "artifacts"
-SCALER_PATH = f"{ARTIFACTS_DIR}/scaler.pkl"
-LE_PATH = f"{ARTIFACTS_DIR}/label_encoder.pkl"
-SVM_MODEL_PATH = f"{ARTIFACTS_DIR}/svm_model.pkl"
+models = "artifacts"
+SCALER_PATH = f"{models}/scaler.pkl"
+LE_PATH = f"{models}/label_encoder.pkl"
+SVM_MODEL_PATH = f"{models}/svm_model.pkl"
 
 
 

@@ -1,21 +1,20 @@
 import cv2
-import numpy as np
+import numpy as np 
 import pickle
 from tensorflow.keras.applications.vgg16 import VGG16, preprocess_input
 
 # Setup paths
-ARTIFACTS_DIR = "artifacts"
-SCALER_PATH = f"{ARTIFACTS_DIR}/knn_scaler.pkl"
-PCA_PATH    = f"{ARTIFACTS_DIR}/knn_pca.pkl"
-LE_PATH     = f"{ARTIFACTS_DIR}/knn_label_encoder.pkl"
-KNN_MODEL_PATH = f"{ARTIFACTS_DIR}/knn_model.pkl"
+models = "artifacts"
+scalerLoc = f"{models}/knn_scaler.pkl"
+pcaLoc    = f"{models}/knn_pca.pkl"
+labelLoc     = f"{models}/knn_label_encoder.pkl"
+knnModelLoc = f"{models}/knn_model.pkl"
 
 # Load Pipeline
-print("Loading KNN Pipeline...")
-with open(SCALER_PATH, "rb") as f: scaler = pickle.load(f)
-with open(PCA_PATH, "rb") as f: pca = pickle.load(f)
-with open(LE_PATH, "rb") as f: le = pickle.load(f)
-with open(KNN_MODEL_PATH, "rb") as f: model = pickle.load(f)
+with open(scalerLoc, "rb") as f: scaler = pickle.load(f)
+with open(pcaLoc, "rb") as f: pca = pickle.load(f)
+with open(labelLoc, "rb") as f: le = pickle.load(f)
+with open(knnModelLoc, "rb") as f: model = pickle.load(f)
 
 # Load VGG for feature extraction (must match training extraction)
 vgg = VGG16(weights='imagenet', include_top=False, input_shape=(224, 224, 3), pooling='avg')
