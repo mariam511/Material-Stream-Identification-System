@@ -10,7 +10,6 @@ from tensorflow.keras.applications.vgg16 import VGG16, preprocess_input
 def predict(dataFilePath, bestModelPath,modeType ="KNN"):
     # you will take only test data no training data 
     models = "artifacts"
-    
 
     if(modeType.upper()=="SVM"): # change paths for files
         scalerLoc = f"{models}/scaler.pkl"
